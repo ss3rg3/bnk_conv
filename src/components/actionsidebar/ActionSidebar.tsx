@@ -9,6 +9,7 @@ import Status = TypeAttributes.Status;
 import {useCallback, useState} from "react";
 import {headerStyles} from "./ActionSidebarStyles.tsx";
 import {ActionSidebarProps} from "./ActionSidebarTypes.tsx";
+import {parseDkbCsv} from "../../converters/DkbConverter.tsx";
 
 
 const createMessage = (message: string, messageType: Status) => {
@@ -21,30 +22,38 @@ const createMessage = (message: string, messageType: Status) => {
 
 const ActionSidebar = ({normalizedRows, setNormalizedRows}: ActionSidebarProps) => {
     const [csvType, setCsvType] = useState<CsvType>(CsvType.DB);
+    const [currentFile, setCurrentFile] = useState<string>("");
     const toaster = useToaster();
 
     const handleFileChange = (file: File) => {
         if (file) {
             Papa.parse<string>(file, {
-                header: false,
-                complete: (results) => {
-                    let normalizedRows;
+                'header': false,
+                'complete': (results) => {
+                    let normalizedRows: NormalizedRow[] = [];
                     switch (csvType) {
                         case 'DB':
                             normalizedRows = parseDbCsv(results.data);
                             break;
+                        case 'DKB':
+                            normalizedRows = parseDkbCsv(results.data);
+                            break;
                         default:
-                            throw new Error('csvType not recognized');
+                            pushToast(`CSV type not recognized, must be one of ${Object.keys(CsvType)}`, 'error');
+                            return
+
                     }
 
                     if (normalizedRows.length > 1) {
                         setNormalizedRows(normalizedRows);
                         pushToast(`Converted ${normalizedRows.length} rows`, 'success');
                     } else {
+                        setNormalizedRows([]);
                         pushToast("Couldn't convert CSV, no valid rows", 'error');
                     }
                 },
             });
+            setCurrentFile(file.name)
         }
     };
 
@@ -109,7 +118,7 @@ const ActionSidebar = ({normalizedRows, setNormalizedRows}: ActionSidebarProps) 
                                     {label: 'DKB', value: 'DKB'},
                                 ]}
                                 searchable={false}
-                                onChange={(value) => setCsvType(value as CsvType)}
+                                onChange={value => setCsvType(value as CsvType)}
                                 value={csvType}
                                 style={{width: '100%'}}
                             />
@@ -125,14 +134,16 @@ const ActionSidebar = ({normalizedRows, setNormalizedRows}: ActionSidebarProps) 
                                 draggable
                                 onChange={(fileList: FileType[]) => {
                                     if (fileList.length > 0) {
-                                        handleFileChange(fileList[0].blobFile as File);
+                                        handleFileChange(fileList[fileList.length - 1].blobFile as File);
                                     }
                                 }}
                             >
                                 <div style={{height: '80px', verticalAlign: 'center', textAlign: 'center'}}>
-                                    Drag and drop
-                                    <br/>
-                                    CSV file here
+                                    {currentFile == ""
+                                        ?  <span>Drag and drop<br/>CSV file here</span>
+                                        :  <span>{currentFile}</span>
+                                    }
+
                                 </div>
                             </Uploader>
                         </Form.Group>
