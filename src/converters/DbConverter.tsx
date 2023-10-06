@@ -10,7 +10,7 @@ export function parseDbCsv(rows: string[]): NormalizedRow[] {
             }
 
             const date: Moment = moment(row[0], "MM/DD/YYYY", true);
-            if (!date.isValid() || row[17] !== "EUR") {
+            if (!date.isValid() || row[18] !== "EUR") {
                 return undefined;
             }
 
@@ -22,8 +22,8 @@ export function parseDbCsv(rows: string[]): NormalizedRow[] {
                 account: CsvType.DB,
                 booking: normalizeBooking(booking),
                 type: parseBooking(booking),
-                credit: getNumberOrNull(row[16]),
-                debit: getNumberOrNull(row[15]),
+                credit: getNumberOrNull(row[17]),
+                debit: getNumberOrNull(row[16]),
             }
         })
         .filter((row: undefined | NormalizedRow): row is NormalizedRow => row !== undefined)
