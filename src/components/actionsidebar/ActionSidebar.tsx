@@ -65,7 +65,7 @@ const ActionSidebar = ({normalizedRows, setNormalizedRows}: ActionSidebarProps) 
                         if (value === null) {
                             return '';
                         } else if (typeof value === 'number') {
-                            return value.toLocaleString('de-DE');
+                            return value.toLocaleString('en-US');
                         } else {
                             return JSON.stringify(value);
                         }
