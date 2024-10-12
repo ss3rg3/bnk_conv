@@ -36,6 +36,7 @@ const ActionSidebar = ({normalizedRows, setNormalizedRows}: ActionSidebarProps) 
                             normalizedRows = parseDbCsv(results.data);
                             break;
                         case 'DKB':
+                            console.log("DKB")
                             normalizedRows = parseDkbCsv(results.data);
                             break;
                         default:
